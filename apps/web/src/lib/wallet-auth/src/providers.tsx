@@ -16,7 +16,7 @@ export interface WalletProviderProps {
 
 export function WalletProvider({ children, config }: WalletProviderProps) {
     return (
-        <WagmiProvider config={config}>
+        <WagmiProvider config={config as Parameters<typeof WagmiProvider>[0]['config']}>
             <QueryClientProvider client={queryClient}>
                 <RainbowKitProvider
                     theme={darkTheme({

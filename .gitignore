@@ -12,6 +12,9 @@ out/
 .env
 .env.local
 .env.*.local
+**/.env
+**/.env.*
+!**/.env.example
 
 # IDE
 .idea/
@@ -33,3 +36,4 @@ target/
 
 # Generated
 *.generated.*
+*.tsbuildinfo
