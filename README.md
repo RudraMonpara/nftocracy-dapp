@@ -1,84 +1,165 @@
-# My App
+# NFTocracy (Arbitrum Sepolia)
 
-A Web3 dApp composed with [[N]skills](https://www.nskills.xyz).
+**NFTocracy** is a Web3 governance dApp where **voting power is derived from ERC‑1155 NFT ownership**. Users connect a wallet, view proposals, create proposals, and vote — all on **Arbitrum Sepolia**.
 
-## Blueprint: selected nodes
+> If the app “is not working”, it’s usually because the wallet has **insufficient Arbitrum Sepolia ETH from faucets** to pay gas. See **Troubleshooting**.
 
-These components were included in this generation:
+## Features
 
-- **ERC-1155 Stylus Multi-Token** — Deploy and interact with ERC-1155 multi-tokens on Arbitrum Stylus
-- **Frontend Scaffold** — Generate a Next.js Web3 application with wagmi, RainbowKit, and smart contract integration
-- **Wallet Authentication** — Wallet connection with RainbowKit and WalletConnect
+- **Wallet connect** (RainbowKit / WalletConnect)
+- **Dashboard**: wallet + contract address + voting power + NFT balances
+- **Proposals**: browse proposals and vote
+- **Create proposal**: submit a new proposal (requires gas)
 
-## Project structure
+## Visual representation
 
+### Screenshots (recommended)
+
+Add screenshots to make this repo instantly understandable.
+
+1) Put images under `docs/images/`:
+
+```text
+docs/images/
+  dashboard.png
+  proposals.png
+  create.png
 ```
-my-app/
-├── apps/
-│   └── web/                    # Next.js app (install dependencies here)
-│       ├── src/
-│       ├── package.json
-│       └── ...
-├── contracts/                  # Rust/Stylus smart contracts
-│   └── erc1155/
-├── docs/                       # Documentation
-├── scripts/                     # Deploy / utility scripts (if generated)
-├── .gitignore
-└── README.md
+
+2) Screenshots:
+
+![Dashboard](docs/images/dashboard.png)
+![Proposals](docs/images/proposals.png)
+![Create proposal](docs/images/create.png)
+
+### UI flow
+
+```mermaid
+flowchart TD
+  A[Open app] --> B[Connect wallet]
+  B --> C{On Arbitrum Sepolia?}
+  C -- No --> D[Switch network]
+  C -- Yes --> E[Dashboard]
+  E --> F[Proposals]
+  E --> G[Create proposal]
+  F --> H[Vote]
+  G --> I[Submit tx]
 ```
 
-## Quick start
+### On-chain interaction (high level)
+
+```mermaid
+sequenceDiagram
+  participant U as User Wallet
+  participant W as Frontend (Next.js)
+  participant N as Arbitrum Sepolia
+  participant C as Voting / ERC-1155 Contract
+
+  U->>W: Connect wallet
+  W->>N: Read chainId, account
+  W->>C: Read voting power & balances
+  U->>W: Create proposal / Vote
+  W->>C: Write tx (gas required)
+  C->>N: Update state + emit events
+```
+
+## Tech stack
+
+- **Next.js (App Router)**: UI + routing
+- **wagmi + RainbowKit**: wallet connection & chain switching
+- **Viem**: EVM primitives (via wagmi)
+- **Arbitrum Sepolia**: target chain
+
+## Repo structure
+
+```text
+nftocracy-dapp/
+  apps/
+    web/                      # Next.js dApp (install dependencies here)
+      src/app/                # / (dashboard), /proposals, /create
+      src/components/         # UI components (nav, etc.)
+      src/hooks/              # useContract hook(s)
+      src/lib/                # contract config/helpers
+  contracts/                  # (optional) contract workspace
+  docs/                       # docs + screenshots
+  README.md
+```
+
+## Environment variables
+
+This project uses a **public client-side** Next.js env pattern for addresses / ids, and keeps secrets local.
+
+From `apps/web/`:
+
+```bash
+cp .env.example .env
+```
+
+Then set (as needed by your deployment):
+
+- **`NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`**: required for wallet connect
+- **`NEXT_PUBLIC_CONTRACT_ADDRESS`**: governance/voting contract address (if used in your build)
+- **`NEXT_PUBLIC_ERC1155_ADDRESS`**: ERC‑1155 contract used to compute balances/voting power (if used in your build)
+
+### Secret safety (.env)
+
+- `.env` is **ignored by git** (so your private key stays private).
+- If a private key was ever committed in the past, **rotate it immediately** (assume it’s compromised).
+
+## Local development
 
 ### Prerequisites
 
-- **Node.js** 18+ and **npm** (comes with Node.js)
-- **Rust** toolchain and **cargo-stylus** for building/deploying Stylus contracts (see `docs/` and [Stylus SDK](https://github.com/OffchainLabs/stylus-sdk-rs))
+- **Node.js 18+**
+- **npm**
 
-### Step-by-step
-
-1. **Clone and enter the project**
-
-   ```bash
-   git clone <your-repo-url>
-   cd <your-repo-name>
-   ```
-
-   ![Clone and enter the project](https://raw.githubusercontent.com/Cradle-app/NSkills/main/apps/web/public/clone-and-enter.png)
-
-2. **Install dependencies** for the Next.js app (this project has no root `package.json`; dependencies live under `apps/web`):
-
-   ```bash
-   cd apps/web
-   npm install
-   ```
-
-   ![Install dependencies](https://raw.githubusercontent.com/Cradle-app/NSkills/main/apps/web/public/install-dep.png)
-
-3. **Environment variables**
-
-   ```bash
-   cp .env.example .env
-   ```
-
-   Edit `.env` and set:
-
-   - `PRIVATE_KEY`: Private key for deployment and transactions
-   - `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`: WalletConnect Cloud project ID for wallet connections
-
-   ![Environment variables](https://raw.githubusercontent.com/Cradle-app/NSkills/main/apps/web/public/env-var.png)
-
-### Run the web app
+### Install dependencies
 
 ```bash
-cd apps/web && npm run dev
+cd apps/web
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+### Run the app
 
+```bash
+cd apps/web
+npm run dev
+```
 
-## Documentation
+Open `http://localhost:3000`.
 
-Check the `docs/` folder for guides that match your blueprint (e.g. frontend setup, contract deployment, API routes).
+## Why it may not be working (Troubleshooting)
+
+### 1) Insufficient faucet funds (most common)
+
+**What happens**
+
+- You can often **view** pages (reads), but **create/vote fails** (writes).
+- Wallet shows errors like **“insufficient funds for gas”**.
+
+**Why**
+
+- Arbitrum Sepolia requires **test ETH** for gas.
+- Faucets can be **rate-limited**, **empty**, or provide too little for repeated transactions.
+
+**How to fix**
+
+- Get more **Arbitrum Sepolia ETH** from a faucet (try multiple; availability changes).
+- Wait for faucet limits to reset.
+- Use a different wallet address if a faucet enforces per-address limits.
+
+### 2) Wrong network
+
+**Fix**: Switch your wallet to **Arbitrum Sepolia** (the app also provides a switch action).
+
+### 3) Missing / incorrect env configuration
+
+**Fix**: Ensure `apps/web/.env` exists and includes `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` and the correct contract address variables.
+
+### 4) Wrong contract address / contract not deployed
+
+**Fix**: Confirm your contract address is deployed on **Arbitrum Sepolia** and matches the ABI expected by the frontend.
 
 ## License
 
@@ -86,4 +167,4 @@ MIT
 
 ---
 
-Generated with [[N]skills](https://www.nskills.xyz)
+Initial scaffold generated with [[N]skills](https://www.nskills.xyz).

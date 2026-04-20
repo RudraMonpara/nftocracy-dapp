@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { WalletButton } from '@/components/wallet-button';
+import { ErrorBoundary } from '@/components/error-boundary';
 import { cn } from '@/lib/utils';
 
 const links = [
@@ -40,7 +41,9 @@ export function SiteNav() {
           })}
         </nav>
         <div className="shrink-0 [&_button]:!text-sm">
-          <WalletButton />
+          <ErrorBoundary>
+            <WalletButton />
+          </ErrorBoundary>
         </div>
       </div>
     </header>
