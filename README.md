@@ -13,20 +13,7 @@
 
 ## Visual representation
 
-### Screenshots (recommended)
-
-Add screenshots to make this repo instantly understandable.
-
-1) Put images under `docs/images/`:
-
-```text
-docs/images/
-  dashboard.png
-  proposals.png
-  create.png
-```
-
-2) Screenshots:
+### Screenshots
 
 ![Dashboard](docs/images/dashboard.png)
 ![Proposals](docs/images/proposals.png)
